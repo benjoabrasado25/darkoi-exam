@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Set the Clock</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- The game is designed on a fixed 720 x 540 stage that is scaled to fit any screen. -->
+  <div id="viewport">
+    <div id="stage" aria-label="Set the clock game">
+
+      <!-- Reference artwork with the hands removed (hands are separate, movable layers) -->
+      <img class="bg" src="assets/images/background.jpg" alt="" draggable="false">
+
+      <!-- Clock layer (display + hands + cap) so it can shake as one piece -->
+      <div id="clockLayer">
+
+      <!-- Live digital read-out drawn over the orange display -->
+      <svg id="digital" aria-live="polite" role="img" aria-label="4:00"></svg>
+
+      <!-- Clock hands: each wrapper rotates around the clock centre -->
+      <div class="hand-wrap" id="hourWrap">
+        <img class="hand-img hour" src="assets/images/hand-hour.png" alt="" draggable="false">
+        <div class="hand-hit hour" id="hourHit" role="slider" tabindex="0"
+             aria-label="Hour hand (red)" aria-valuemin="0" aria-valuemax="719"></div>
+      </div>
+      <div class="hand-wrap" id="minuteWrap">
+        <img class="hand-img minute" src="assets/images/hand-minute.png" alt="" draggable="false">
+        <div class="hand-hit minute" id="minuteHit" role="slider" tabindex="0"
+             aria-label="Minute hand (blue)" aria-valuemin="0" aria-valuemax="719"></div>
+      </div>
+      <img class="cap" id="cap" src="assets/images/center-cap.png" alt="" draggable="false">
+      </div>
+
+      <!-- Replay button sits exactly over the purple speaker in the artwork -->
+      <button id="replayBtn" class="hotspot" type="button" aria-label="Hear the question again"></button>
+
+      <!-- Progress: one star per question -->
+      <div id="progress" aria-hidden="true"></div>
+
+      <!-- Check answer -->
+      <button id="checkBtn" type="button" aria-label="Check my answer">
+        <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M11 25 L20 34 L37 15"/></svg>
+      </button>
+
+      <!-- Feedback badge (tick or cross) -->
+      <div id="feedback" aria-hidden="true">
+        <svg class="ok" viewBox="0 0 48 48"><path d="M11 25 L20 34 L37 15"/></svg>
+        <svg class="no" viewBox="0 0 48 48"><path d="M15 15 L33 33 M33 15 L15 33"/></svg>
+      </div>
+
+      <!-- Start screen: white cover with the 300px start button -->
+      <div id="startScreen" class="screen">
+        <button id="startBtn" class="start-btn" type="button" aria-label="Start">
+          <img src="assets/images/start.png" alt="" draggable="false">
+        </button>
+      </div>
+
+      <!-- End screen -->
+      <div id="endScreen" class="screen hidden">
+        <h1>Great job!</h1>
+        <div id="endStars" aria-hidden="true"></div>
+        <button id="againBtn" class="start-btn again" type="button" aria-label="Play again">
+          <img src="assets/images/start.png" alt="" draggable="false">
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="js/game.js"></script>
+</body>
+</html>

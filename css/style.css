@@ -1,0 +1,229 @@
+/* =========================================================
+   Set the Clock - styles
+   The stage is a fixed 720 x 540 box (the size required for
+   the Storyline Web Object). JS scales it to fit the window.
+   Layer positions are percentages of the 1446 x 1087 artwork,
+   so they line up exactly with the background picture.
+   ========================================================= */
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: #ffffff;
+  overflow: hidden;
+  font-family: "Arial Rounded MT Bold", "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+#viewport {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
+
+#stage {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 720px;
+  height: 540px;
+  margin: -270px 0 0 -360px;      /* centred; JS adds transform: scale() */
+  transform-origin: 50% 50%;
+  overflow: hidden;
+  touch-action: none;             /* dragging hands must not scroll the page */
+}
+
+img { display: block; -webkit-user-drag: none; }
+
+.bg { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+#clockLayer { position: absolute; inset: 0; pointer-events: none; }
+
+/* ---------- Digital display (over the orange box) ---------- */
+#digital {
+  position: absolute;
+  left: 42.462%;  top: 60.902%;
+  width: 15.284%; height: 6.716%;
+  overflow: visible;
+}
+#digital .seg   { fill: #d8231c; stroke: #7d0b07; stroke-width: 1.3; stroke-linejoin: round; }
+#digital .ghost { fill: #e9700f; stroke: none; opacity: .35; }   /* faint unlit segments */
+
+/* ---------- Clock hands ---------- */
+.hand-wrap {
+  position: absolute;
+  left: 31.8811%;  top: 26.4949%;          /* square centred on the clock pivot */
+  width: 36.2379%; height: 48.2061%;
+  transform-origin: 50% 50%;
+  pointer-events: none;
+  filter: drop-shadow(2px 3px 2px rgba(80, 40, 0, .25));
+}
+.hand-wrap.snap { transition: transform .18s ease-out; }
+.hand-img { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.hand-img.hour { transform: rotate(-120deg); }  /* artwork hour hand points at 4 (120 deg) */
+
+/* Invisible, finger-sized grab areas along each hand */
+.hand-hit {
+  position: absolute;
+  left: 50%;
+  width: 60px;
+  margin-left: -30px;
+  bottom: calc(50% + 18px);
+  border-radius: 30px;
+  pointer-events: auto;
+  cursor: grab;
+  touch-action: none;
+  outline: none;
+}
+.hand-hit.minute { height: 118px; }
+.hand-hit.hour   { height: 90px; }
+.dragging .hand-hit { cursor: grabbing; }
+.hand-hit:focus-visible { box-shadow: 0 0 0 4px rgba(255, 255, 255, .9), 0 0 0 7px #6a3df0; }
+
+.cap {
+  position: absolute;
+  left: 46.6805%; top: 46.1822%;
+  width: 6.639%;  height: 8.8316%;
+  pointer-events: none;
+}
+
+/* ---------- Replay (speaker) hotspot over the artwork ---------- */
+.hotspot {
+  position: absolute;
+  left: 4.149%;  top: 2.852%;
+  width: 7.884%; height: 10.304%;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+}
+.hotspot:hover { box-shadow: 0 0 0 4px rgba(255, 255, 255, .7); }
+.hotspot:focus-visible { outline: none; box-shadow: 0 0 0 4px #fff, 0 0 0 7px #6a3df0; }
+.hotspot.playing { animation: pulse 1s ease-in-out infinite; }
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, .85); }
+  50%      { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); }
+}
+
+/* ---------- Progress stars ---------- */
+#progress {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, .55);
+}
+.star { width: 20px; height: 20px; }
+.star path { fill: #ffffff; stroke: #b98a00; stroke-width: 2; transition: fill .3s; }
+.star.current path { fill: #fff3b0; stroke: #e08a00; }
+.star.done path    { fill: #ffc81e; stroke: #b06d00; }
+.star.pop { animation: pop .5s ease-out; }
+
+/* ---------- Check button ---------- */
+#checkBtn {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  border: 5px solid #ffffff;
+  background: radial-gradient(circle at 35% 30%, #6be36b, #1f9d2a 70%);
+  box-shadow: 0 5px 0 #136b1b, 0 8px 14px rgba(0, 0, 0, .35);
+  cursor: pointer;
+  padding: 12px;
+  transition: transform .1s, filter .2s;
+}
+#checkBtn svg { width: 100%; height: 100%; }
+#checkBtn path { fill: none; stroke: #fff; stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
+#checkBtn:active { transform: translateY(4px); box-shadow: 0 1px 0 #136b1b, 0 3px 8px rgba(0, 0, 0, .35); }
+#checkBtn:disabled { filter: grayscale(.7) brightness(.9); cursor: default; }
+#checkBtn:focus-visible { outline: none; box-shadow: 0 0 0 4px #fff, 0 0 0 8px #6a3df0; }
+
+/* ---------- Feedback badge ---------- */
+#feedback {
+  position: absolute;
+  left: 50%;
+  top: 50.5%;
+  width: 150px;
+  height: 150px;
+  margin: -75px 0 0 -75px;
+  border-radius: 50%;
+  border: 6px solid #fff;
+  padding: 26px;
+  opacity: 0;
+  transform: scale(.3);
+  pointer-events: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .35);
+}
+#feedback svg { width: 100%; height: 100%; display: none; }
+#feedback path { fill: none; stroke: #fff; stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
+#feedback.correct { background: #22a82f; animation: badge 1.3s ease-out forwards; }
+#feedback.wrong   { background: #e2402f; animation: badge .9s ease-out forwards; }
+#feedback.correct .ok, #feedback.wrong .no { display: block; }
+
+@keyframes badge {
+  0%   { opacity: 0; transform: scale(.3); }
+  20%  { opacity: 1; transform: scale(1.1); }
+  35%  { transform: scale(1); }
+  80%  { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(.9); }
+}
+@keyframes pop {
+  0% { transform: scale(1); } 50% { transform: scale(1.6); } 100% { transform: scale(1); }
+}
+.shake { animation: shake .45s ease-in-out; }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-9px); } 40% { transform: translateX(9px); }
+  60% { transform: translateX(-6px); } 80% { transform: translateX(6px); }
+}
+
+/* ---------- Start / End screens ---------- */
+.screen {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.screen.hidden { display: none; }
+
+.start-btn {
+  width: 300px;
+  height: 300px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  transition: transform .15s;
+}
+.start-btn img { width: 100%; height: 100%; }
+.start-btn:hover  { transform: scale(1.04); }
+.start-btn:active { transform: scale(.96); }
+.start-btn:focus-visible { outline: 5px solid #6a3df0; outline-offset: -20px; }
+.start-btn.again { width: 170px; height: 170px; }
+
+#endScreen h1 {
+  margin: 0 0 14px;
+  font-size: 64px;
+  color: #ff8a00;
+  text-shadow: 0 4px 0 #c75b00;
+  letter-spacing: 1px;
+  animation: pop .6s ease-out;
+}
+#endStars { display: flex; gap: 6px; margin-bottom: 26px; }
+#endStars .star { width: 48px; height: 48px; animation: pop .5s ease-out backwards; }

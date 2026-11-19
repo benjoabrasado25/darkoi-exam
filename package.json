@@ -1,0 +1,15 @@
+{
+  "name": "darkoi-exam",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Set the Clock - a learning game for K-2 (plain HTML/CSS/JS). This file is only used to host a preview (e.g. Railway); the game itself needs no build or install.",
+  "scripts": {
+    "start": "serve . --no-clipboard -l tcp://0.0.0.0:${PORT:-3000}"
+  },
+  "dependencies": {
+    "serve": "14.2.4"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
