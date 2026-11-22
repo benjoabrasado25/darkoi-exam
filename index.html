@@ -38,18 +38,9 @@
       <!-- Replay button sits exactly over the purple speaker in the artwork -->
       <button id="replayBtn" class="hotspot" type="button" aria-label="Hear the question again"></button>
 
-      <!-- Progress: one star per question -->
-      <div id="progress" aria-hidden="true"></div>
-
-      <!-- Check answer -->
-      <button id="checkBtn" type="button" aria-label="Check my answer">
-        <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M11 25 L20 34 L37 15"/></svg>
-      </button>
-
-      <!-- Feedback badge (tick or cross) -->
+      <!-- "Correct" badge: shown automatically when the clock matches the question -->
       <div id="feedback" aria-hidden="true">
         <svg class="ok" viewBox="0 0 48 48"><path d="M11 25 L20 34 L37 15"/></svg>
-        <svg class="no" viewBox="0 0 48 48"><path d="M15 15 L33 33 M33 15 L15 33"/></svg>
       </div>
 
       <!-- Start screen: white cover with the 300px start button -->
@@ -62,7 +53,6 @@
       <!-- End screen -->
       <div id="endScreen" class="screen hidden">
         <h1>Great job!</h1>
-        <div id="endStars" aria-hidden="true"></div>
         <button id="againBtn" class="start-btn again" type="button" aria-label="Play again">
           <img src="assets/images/start.png" alt="" draggable="false">
         </button>

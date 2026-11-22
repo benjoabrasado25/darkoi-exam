@@ -3,7 +3,9 @@
 
    Flow: Start button -> 10 random questions -> "Great job!" -> Play again
    Each question plays "Set the clock to ..." and the child drags the
-   clock hands, then taps the green check button.
+   clock hands. When a hand is let go, the time is checked automatically:
+   the right time gives a tick + chime and the next question; any other
+   time does nothing, so the child simply keeps trying.
    ========================================================= */
 (function () {
   'use strict';
@@ -23,18 +25,15 @@
   var hourHit = $('hourHit'), minuteHit = $('minuteHit');
   var cap = $('cap');
   var digital = $('digital');
-  var checkBtn = $('checkBtn'), replayBtn = $('replayBtn');
-  var feedback = $('feedback'), clockLayer = $('clockLayer');
-  var progress = $('progress');
+  var replayBtn = $('replayBtn');
+  var feedback = $('feedback');
   var startScreen = $('startScreen'), endScreen = $('endScreen');
 
   /* ---------- Game state ---------- */
   var clockMinutes = START_TIME;    // minutes since 12:00, NOT wrapped (keeps rotations smooth)
   var questions = [];
   var qIndex = 0;
-  var triesThisQuestion = 0;
-  var firstTryResults = [];
-  var busy = false;                 // true while feedback is showing (blocks double taps)
+  var busy = false;                 // true while the "correct" feedback shows (hands locked)
   var drag = null;                  // { hand: 'hour'|'minute', lastAngle, pointerId }
 
   /* =========================================================
@@ -163,6 +162,7 @@
     drag = null;
     stage.classList.remove('dragging');
     snapClock();
+    checkAnswer();
   }
 
   // Snap to the nearest 5 minutes with a short animation
@@ -185,10 +185,10 @@
       var step = pair[0] === 'minute' ? SNAP_MINUTES : 60;
       if (e.key === 'ArrowRight' || e.key === 'ArrowUp') clockMinutes += step;
       else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') clockMinutes -= step;
-      else if (e.key === 'Enter') { checkAnswer(); return; }
       else return;
       e.preventDefault();
       snapClock();
+      checkAnswer();
     });
   });
 
@@ -273,10 +273,7 @@
   function soundCorrect() {   // happy rising arpeggio
     [523, 659, 784, 1047].forEach(function (f, i) { tone(f, i * 0.1, 0.35, 'triangle', 0.25); });
   }
-  function soundWrong() {     // soft, low "boop"
-    var o = tone(260, 0, 0.35, 'sine', 0.25);
-    if (o) o.frequency.exponentialRampToValueAtTime(170, actx.currentTime + 0.3);
-  }
+
 
   /* =========================================================
      5. Questions: 10 random times with no repeats
@@ -321,68 +318,32 @@
     return startScreen.classList.contains('hidden') && endScreen.classList.contains('hidden');
   }
 
-  var STAR_PATH = 'M12 1.8l3.1 6.4 7 1-5.1 4.9 1.2 7-6.2-3.3-6.2 3.3 1.2-7L1.9 9.2l7-1z';
-  function starSVG(cls) {
-    return '<svg class="star ' + (cls || '') + '" viewBox="0 0 24 24"><path d="' + STAR_PATH + '"/></svg>';
-  }
-
-  function renderProgress() {
-    var html = '';
-    for (var i = 0; i < TOTAL_QUESTIONS; i++) {
-      html += starSVG(i < qIndex ? 'done' : i === qIndex ? 'current' : '');
-    }
-    progress.innerHTML = html;
-  }
-
   function startGame() {
     initTones();                                  // unlock sound on this first tap
     questions = makeQuestions(currentTime());
     qIndex = 0;
-    firstTryResults = [];
-    triesThisQuestion = 0;
     busy = false;
-    checkBtn.disabled = false;
     startScreen.classList.add('hidden');
     endScreen.classList.add('hidden');
-    renderProgress();
     askQuestion();
   }
 
+  // Called whenever a hand is let go (or moved with the keyboard).
+  // Only the right time reacts; a wrong time is ignored so the child can keep adjusting.
   function checkAnswer() {
     if (busy || !gameRunning() || drag) return;
-    busy = true;                                  // ignore repeated taps while feedback shows
-    checkBtn.disabled = true;
-    stopVoice();
-    triesThisQuestion++;
-
     var q = questions[qIndex], t = currentTime();
-    var correct = t.h === q.h && t.m === q.m;
-    showBadge(correct ? 'correct' : 'wrong');
+    if (t.h !== q.h || t.m !== q.m) return;
 
-    if (correct) {
-      soundCorrect();
-      firstTryResults.push(triesThisQuestion === 1);
-      qIndex++;
-      renderProgress();
-      var stars = progress.querySelectorAll('.star');
-      if (stars[qIndex - 1]) stars[qIndex - 1].classList.add('pop');
-      setTimeout(function () {
-        busy = false;
-        checkBtn.disabled = false;
-        triesThisQuestion = 0;
-        if (qIndex >= TOTAL_QUESTIONS) showEnd(); else askQuestion();
-      }, 1400);
-    } else {
-      soundWrong();
-      clockLayer.classList.remove('shake');
-      void clockLayer.offsetWidth;                // restart the shake animation
-      clockLayer.classList.add('shake');
-      setTimeout(function () {
-        busy = false;
-        checkBtn.disabled = false;
-        askQuestion();                            // say the time again to help
-      }, 1000);
-    }
+    busy = true;                                  // lock the hands while the tick shows
+    stopVoice();
+    showBadge('correct');
+    soundCorrect();
+    qIndex++;
+    setTimeout(function () {
+      busy = false;
+      if (qIndex >= TOTAL_QUESTIONS) showEnd(); else askQuestion();
+    }, 1400);
   }
 
   function showBadge(kind) {
@@ -393,11 +354,6 @@
 
   function showEnd() {
     stopVoice();
-    var html = '';
-    for (var i = 0; i < TOTAL_QUESTIONS; i++) {
-      html += starSVG('done').replace('<svg ', '<svg style="animation-delay:' + (i * 0.08) + 's" ');
-    }
-    $('endStars').innerHTML = html;
     endScreen.classList.remove('hidden');
     soundCorrect();
     setTimeout(function () { tone(1319, 0, 0.5, 'triangle', 0.2); }, 450);
@@ -407,7 +363,6 @@
   /* ---------- Button wiring ---------- */
   $('startBtn').addEventListener('click', startGame);
   $('againBtn').addEventListener('click', startGame);
-  checkBtn.addEventListener('click', checkAnswer);
   replayBtn.addEventListener('click', function () {
     if (!gameRunning() || busy) return;
     initTones();
@@ -420,7 +375,6 @@
   /* ---------- Init ---------- */
   preloadAudio();
   renderClock();
-  renderProgress();
 
   // Small hook for automated testing (not used by the game itself)
   window.__clockGame = {

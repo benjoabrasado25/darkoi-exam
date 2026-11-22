@@ -26,6 +26,6 @@ The trial task asks for a **Review 360 link**. These steps take the game folder 
 
 ## 5. Check the published link
 - Open the link in Chrome and on a phone or tablet.
-- Tap **Start**, listen to the prompt, drag both hands, try a wrong answer, then finish all 10 questions.
+- Tap **Start**, listen to the prompt, drag both hands, let go on a wrong time (nothing should happen), then set the right time and finish all 10 questions.
 
 If no sound plays, make sure the device isn't muted. Browsers only allow sound after a tap, which is why the game starts with the Start button.
